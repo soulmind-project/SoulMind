@@ -3,10 +3,10 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import docx
 import torch
 
-# Carregar um modelo ultra leve da Hugging Face
+# Carregar um modelo leve e público da Hugging Face
 @st.cache_resource
 def carregar_modelo():
-    model_name = "HuggingFaceH4/tiny-random-Llama-2"
+    model_name = "EleutherAI/gpt-neo-125M"  # Modelo público e leve
     model = AutoModelForCausalLM.from_pretrained(model_name)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     return model, tokenizer
@@ -17,7 +17,7 @@ def read_docx(file):
     return "\n".join([paragraph.text for paragraph in doc.paragraphs])
 
 # Interface no Streamlit
-st.title("💡 SoulMind - Modo Open Source (Modelo Leve)")
+st.title("💡 SoulMind - Modo Open Source (Modelo Público)")
 
 # Upload do arquivo DOCX
 uploaded_file = st.file_uploader("📂 Envie o arquivo DOCX", type="docx")
@@ -39,7 +39,7 @@ if uploaded_file is not None:
             input_text = f"{conteudo[:1500]}\n\nPergunta: {pergunta}"
             inputs = tokenizer(input_text, return_tensors="pt")
             with torch.no_grad():
-                output = model.generate(**inputs, max_length=150)
+                output = model.generate(**inputs, max_length=300)
             resposta = tokenizer.decode(output[0], skip_special_tokens=True)
 
             # Exibir a resposta
@@ -49,7 +49,8 @@ if uploaded_file is not None:
         except Exception as e:
             st.error(f"⚠️ Erro durante o processamento: {e}")
 
-st.info("📢 Modo gratuito e 100% open source ativado com modelo otimizado! 🚀")
+st.info("📢 Modo gratuito e 100% open source ativado com o modelo GPT-Neo! 🚀")
+
 
 
 
