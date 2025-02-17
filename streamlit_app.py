@@ -3,10 +3,10 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import docx
 import torch
 
-# Carregar um modelo menor da Hugging Face
+# Carregar um modelo ultra leve da Hugging Face
 @st.cache_resource
 def carregar_modelo():
-    model_name = "HuggingFaceH4/zephyr-7b-alpha"
+    model_name = "HuggingFaceH4/tiny-random-Llama-2"
     model = AutoModelForCausalLM.from_pretrained(model_name)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     return model, tokenizer
@@ -39,7 +39,7 @@ if uploaded_file is not None:
             input_text = f"{conteudo[:1500]}\n\nPergunta: {pergunta}"
             inputs = tokenizer(input_text, return_tensors="pt")
             with torch.no_grad():
-                output = model.generate(**inputs, max_length=300)
+                output = model.generate(**inputs, max_length=150)
             resposta = tokenizer.decode(output[0], skip_special_tokens=True)
 
             # Exibir a resposta
@@ -50,5 +50,6 @@ if uploaded_file is not None:
             st.error(f"⚠️ Erro durante o processamento: {e}")
 
 st.info("📢 Modo gratuito e 100% open source ativado com modelo otimizado! 🚀")
+
 
 
