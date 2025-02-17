@@ -3,7 +3,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import docx
 import torch
 
-# Carregar o modelo da Hugging Face (Open Source)
+# Carregar um modelo menorda Hugging 
 @st.cache_resource
 def carregar_modelo():
     model_name = "mistralai/Mistral-7B-Instruct-v0.1"
