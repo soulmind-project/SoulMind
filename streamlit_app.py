@@ -1,56 +1,55 @@
 import streamlit as st
-from openai import OpenAI
+import openai
+import docx
+import requests
 
-# Show title and description.
-st.title("💬 Chatbot")
-st.write(
-    "This is a simple chatbot that uses OpenAI's GPT-3.5 model to generate responses. "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
-    "You can also learn how to build this app step by step by [following our tutorial](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps)."
-)
+# Configurar a chave da OpenAI/OpenRouter
+openai.api_key = "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"
+openai.api_base = "https://openrouter.ai/api/v1"
 
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
+# Função para baixar e ler o arquivo DOCX diretamente do GitHub
+def baixar_e_ler_docx(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open("modulo2.docx", "wb") as f:
+            f.write(response.content)
+        doc = docx.Document("modulo2.docx")
+        return "\n".join([paragraph.text for paragraph in doc.paragraphs])
+    else:
+        return "⚠️ Não foi possível baixar o conteúdo."
 
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+# URL do arquivo no GitHub (ajuste com seu nome de usuário e repositório)
+url_arquivo = "https://raw.githubusercontent.com/SEU_USUARIO/soulmind-prototipo/main/modulo2.docx"
 
-    # Create a session state variable to store the chat messages. This ensures that the
-    # messages persist across reruns.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+# Carregar o conteúdo
+conteudo = baixar_e_ler_docx(url_arquivo)
 
-    # Display the existing chat messages via `st.chat_message`.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+# Interface do Streamlit
+st.title("💡 SoulMind - Prototipagem Rápida")
 
-    # Create a chat input field to allow the user to enter a message. This will display
-    # automatically at the bottom of the page.
-    if prompt := st.chat_input("What is up?"):
+# Exibir o conteúdo carregado
+if conteudo:
+    st.subheader("📖 Conteúdo Carregado:")
+    st.text_area("Texto", conteudo[:2000], height=400)
 
-        # Store and display the current prompt.
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+    # Caixa de perguntas
+    pergunta = st.text_input("💬 Digite sua pergunta sobre o conteúdo:")
 
-        # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
-        )
+    # Se houver pergunta
+    if st.button("🔍 Perguntar"):
+        with st.spinner("⏳ Processando sua pergunta..."):
+            try:
+                resposta = openai.Completion.create(
+                    engine="openai/gpt-3.5-turbo",
+                    prompt=f"{conteudo[:3000]}\n\nPergunta: {pergunta}",
+                    max_tokens=200
+                )
+                resposta_texto = resposta['choices'][0]['text'].strip()
+                st.success("✅ Resposta da SoulMind:")
+                st.markdown(f"**{resposta_texto}**")
 
-        # Stream the response to the chat using `st.write_stream`, then store it in 
-        # session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+            except Exception as e:
+                st.error(f"⚠️ Erro: {e}")
+
+    st.info("📢 **Dica:** O conteúdo foi carregado automaticamente do GitHub.")
+
