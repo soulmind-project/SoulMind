@@ -3,23 +3,23 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import docx
 import torch
 
-# Carregar um modelo menorda Hugging 
+# Carregar um modelo menor da Hugging Face
 @st.cache_resource
 def carregar_modelo():
-    model_name = "mistralai/Mistral-7B-Instruct-v0.1"
+    model_name = "HuggingFaceH4/zephyr-7b-alpha"
     model = AutoModelForCausalLM.from_pretrained(model_name)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     return model, tokenizer
 
-# Função para ler o arquivo DOCX
+# Função para ler o conteúdo do arquivo DOCX
 def read_docx(file):
     doc = docx.Document(file)
     return "\n".join([paragraph.text for paragraph in doc.paragraphs])
 
 # Interface no Streamlit
-st.title("💡 SoulMind - Modo Open Source 🛠️")
+st.title("💡 SoulMind - Modo Open Source (Modelo Leve)")
 
-# Upload do arquivo
+# Upload do arquivo DOCX
 uploaded_file = st.file_uploader("📂 Envie o arquivo DOCX", type="docx")
 
 if uploaded_file is not None:
@@ -49,6 +49,6 @@ if uploaded_file is not None:
         except Exception as e:
             st.error(f"⚠️ Erro durante o processamento: {e}")
 
-st.info("📢 Modo gratuito e 100% open source ativado! 🚀")
+st.info("📢 Modo gratuito e 100% open source ativado com modelo otimizado! 🚀")
 
 
